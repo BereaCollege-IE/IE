@@ -180,6 +180,13 @@ a:focus-visible, button:focus-visible, input:focus-visible {
 .files p { margin: 0.125rem 0 0; font-size: 0.9375rem; }
 .file-meta { font-family: var(--mono); font-size: 0.75rem; }
 
+.cycle { margin: 1.5rem 0 0.5rem; }
+.cycle img { display: block; width: 100%; height: auto; border: 1px solid var(--gray); }
+.cycle figcaption { margin-top: 0.5rem; font-size: 0.875rem; }
+.link-list { margin: 0.75rem 0 0; padding-left: 1.25rem; }
+.link-list li { margin-bottom: 0.75rem; font-size: 0.9375rem; }
+.link-list a { font-weight: 600; font-size: 1rem; }
+
 .help-box { margin-top: 2.5rem; padding: 1.25rem 1.5rem; background: var(--gray); }
 .help-box h2 { margin-top: 0; font-size: 1.375rem; }
 .help-box p { margin: 0; }

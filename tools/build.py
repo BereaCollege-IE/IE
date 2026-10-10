@@ -40,7 +40,11 @@ SUBNAV = {
         ("Academic Departments", "#academic"),
         ("Academic &amp; Student Support Services", "#support-services"),
         ("Administrative Offices", "#administrative"),
-        ("For All Areas", "#all-areas"),
+        ("Writing Outcomes", "#writing-outcomes"),
+        ("Planning and Measures", "#planning-and-measures"),
+        ("Using Results", "#using-results"),
+        ("Reference", "#reference"),
+        ("Outside Resources", "#outside-resources"),
     ],
 }
 
@@ -51,6 +55,7 @@ QUICK_LINKS = [
     ("Report template: Administrative Offices", "files/assessment/administrative/annual-assessment-report-template-administrative-offices.docx"),
     ("Review rubrics", "assessment/#academic"),
     ("Writing measurable outcomes", "files/assessment/general/writing-clear-measurable-outcomes.docx"),
+    ("Assessment glossary", "files/assessment/guides/assessment-glossary.pdf"),
 ]
 
 MONTHS = ["January", "February", "March", "April", "May", "June", "July",
