@@ -5,7 +5,9 @@ What it does, in order:
   1. Stamps the shared header and footer (partials/) into every page, between the
      <!-- BEGIN:header --> / <!-- END:header --> and <!-- BEGIN:footer --> / <!-- END:footer --> markers.
      Edit the partials, never the stamped copies; the next build overwrites them.
-  2. Marks the current section in the main menu (from each page's <meta name="section">).
+  2. Builds the left-hand section menu between <!-- BEGIN:sidebar --> / <!-- END:sidebar -->,
+     and marks the current section in both menus (from each page's <meta name="section">).
+     Sub-links for each section are listed in SUBNAV below.
   3. Fills the "Page last reviewed" date from each page's <meta name="last-reviewed" content="YYYY-MM-DD">.
   4. Rebuilds search-index.json, which the search page reads.
   5. Checks every page for em dashes and for links to files that don't exist.
@@ -29,6 +31,26 @@ NAV = [
     ("accreditation", "Accreditation", "accreditation/"),
     ("ai", "AI", "ai/"),
     ("data", "Data &amp; Reports", "data/"),
+]
+
+# Sub-links shown in the left-hand menu under the current section. Add entries as sections fill in.
+SUBNAV = {
+    "assessment": [
+        ("Overview", "#main"),
+        ("Academic Departments", "#academic"),
+        ("Academic &amp; Student Support Services", "#support-services"),
+        ("Administrative Offices", "#administrative"),
+        ("For All Areas", "#all-areas"),
+    ],
+}
+
+# Left-hand menu on the homepage: the most-used links. Paths are from the site root.
+QUICK_LINKS = [
+    ("Report template: Academic Departments", "files/assessment/academic/annual-assessment-report-template-academic-departments.docx"),
+    ("Report template: Support Services", "files/assessment/support-services/annual-assessment-report-template-academic-student-support-services.docx"),
+    ("Report template: Administrative Offices", "files/assessment/administrative/annual-assessment-report-template-administrative-offices.docx"),
+    ("Review rubrics", "assessment/#academic"),
+    ("Writing measurable outcomes", "files/assessment/general/writing-clear-measurable-outcomes.docx"),
 ]
 
 MONTHS = ["January", "February", "March", "April", "May", "June", "July",
@@ -56,10 +78,32 @@ def pretty_date(iso):
     return f"{MONTHS[d.month - 1]} {d.day}, {d.year}"
 
 
-def stamp(text, block, content):
+def sidebar(root, section):
+    if section == "home":
+        links = "\n".join(
+            f'      <li><a href="{root}{href}"{" download" if href.startswith("files/") else ""}>{t}</a></li>'
+            for t, href in QUICK_LINKS)
+        return ('<nav aria-label="Quick links">\n    <h2 class="side-title">Quick links</h2>\n'
+                '    <ul class="quick">\n' + links + "\n    </ul>\n  </nav>\n")
+    title = "Site sections"
+    items = []
+    for key, label, href in NAV:
+        cur = ' aria-current="page"' if key == section else ""
+        sub = ""
+        if key == section and SUBNAV.get(key):
+            subs = "\n".join(f'          <li><a href="{root}{href}{a}">{t}</a></li>' for t, a in SUBNAV[key])
+            sub = f"\n        <ul>\n{subs}\n        </ul>\n      "
+        items.append(f'      <li><a href="{root}{href}"{cur}>{label}</a>{sub}</li>')
+    return (f'<nav aria-label="Section menu">\n    <h2 class="side-title">{title}</h2>\n    <ul>\n'
+            + "\n".join(items) + "\n    </ul>\n  </nav>\n")
+
+
+def stamp(text, block, content, required=True):
     pattern = re.compile(r"(<!-- BEGIN:%s -->)(.*?)(<!-- END:%s -->)" % (block, block), re.S)
     if not pattern.search(text):
-        raise SystemExit(f"Missing {block} markers")
+        if required:
+            raise SystemExit(f"Missing {block} markers")
+        return text
     return pattern.sub(lambda m: m.group(1) + "\n" + content + m.group(3), text, count=1)
 
 
@@ -141,6 +185,7 @@ def main():
 
         text = stamp(text, "header", header)
         text = stamp(text, "footer", footer)
+        text = stamp(text, "sidebar", "  " + sidebar(root, section), required=False)
         path.write_text(text, encoding="utf-8")
 
         # Checks
@@ -148,7 +193,7 @@ def main():
             if "\u2014" in line:
                 problems.append(f"{rel}:{n}: em dash")
         for href in re.findall(r'(?:href|src)="([^"#?:]+)"', text):
-            if href.startswith(("http", "mailto", "//")):
+            if href.startswith(("http", "mailto", "//")) or href == "":
                 continue
             target = (path.parent / href).resolve()
             if href.endswith("/"):
